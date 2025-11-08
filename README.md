@@ -1,5 +1,3 @@
----
-
 # 🚗 AI-Powered Vehicle Condition Assessment — Hiring Sprint
 
 > **⏱️ Duration:** 48 hours
@@ -337,5 +335,3 @@ function estimateCost(detections) {
 ---
 
 > 🏁 **Good luck!** Build smart, fast, and ethically. Let your prototype redefine rental inspections 🚀
-
----

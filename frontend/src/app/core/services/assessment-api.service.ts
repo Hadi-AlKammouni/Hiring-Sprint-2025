@@ -27,15 +27,19 @@ export interface Assessment {
 export class AssessmentApiService {
   private http = inject(HttpClient);
 
+  // TODO: later move to environment file
+  private readonly baseUrl = 'http://localhost:3000';
+
   loading = signal(false);
   lastAssessment = signal<Assessment | null>(null);
   error = signal<string | null>(null);
 
+  //  Kept for testing
   createMockAssessment() {
     this.loading.set(true);
     this.error.set(null);
 
-    this.http.post<Assessment>('http://localhost:3000/api/assessments', {}).subscribe({
+    this.http.post<Assessment>(`${this.baseUrl}/api/assessments`, {}).subscribe({
       next: (assessment) => {
         this.lastAssessment.set(assessment);
         this.loading.set(false);
@@ -44,6 +48,36 @@ export class AssessmentApiService {
         console.error(err);
         this.error.set('Failed to contact backend');
         this.loading.set(false);
+      },
+    });
+  }
+
+  // Send pickup & return images via multipart/form-data
+  createAssessmentWithImages(pickupFiles: File[], returnFiles: File[]) {
+    const formData = new FormData();
+
+    pickupFiles.forEach((file) => {
+      formData.append('pickupImages', file);
+    });
+
+    returnFiles.forEach((file) => {
+      formData.append('returnImages', file);
+    });
+
+    this.loading.set(true);
+    this.error.set(null);
+    this.lastAssessment.set(null);
+
+    this.http.post<Assessment>(`${this.baseUrl}/api/assessments`, formData).subscribe({
+      next: (assessment) => {
+        this.lastAssessment.set(assessment);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        console.error(err);
+        this.error.set('Failed to contact backend');
+        this.loading.set(false);
+        this.error.set('Failed to create assessment with images');
       },
     });
   }

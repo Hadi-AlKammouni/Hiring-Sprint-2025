@@ -1,31 +1,107 @@
 <div class="page">
   <h1>AI-Powered Vehicle Condition Assessment</h1>
+  <p class="subtitle">
+    Upload pickup and return images of the vehicle. The system will analyze and summarize damages.
+  </p>
 
-  <button mat-raised-button color="primary" (click)="onCreateAssessment()">
-    Create mock assessment
-  </button>
+  <div class="cards">
+    <!-- Pickup images -->
+    <mat-card class="upload-card">
+      <mat-card-title>Pickup Images</mat-card-title>
+      <mat-card-content>
+        <p>Select one or more images taken at vehicle pickup.</p>
 
-  @if (api.loading()) {
-    <mat-progress-spinner mode="indeterminate" diameter="32"> </mat-progress-spinner>
-  }
+        <input type="file" accept="image/*" multiple (change)="onPickupFilesSelected($event)" />
+
+        @if (pickupFiles().length > 0) {
+          <h4>Selected files:</h4>
+          <ul>
+            @for (file of pickupFiles(); track file.name) {
+              <li>
+                <mat-icon inline>image</mat-icon>
+                {{ file.name }}
+              </li>
+            }
+          </ul>
+        }
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Return images -->
+    <mat-card class="upload-card">
+      <mat-card-title>Return Images</mat-card-title>
+      <mat-card-content>
+        <p>Select one or more images taken at vehicle return.</p>
+
+        <input type="file" accept="image/*" multiple (change)="onReturnFilesSelected($event)" />
+
+        @if (returnFiles().length > 0) {
+          <h4>Selected files:</h4>
+          <ul>
+            @for (file of returnFiles(); track file.name) {
+              <li>
+                <mat-icon inline>image</mat-icon>
+                {{ file.name }}
+              </li>
+            }
+          </ul>
+        }
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div class="actions">
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="onCreateAssessment()"
+      [disabled]="pickupFiles().length === 0 || returnFiles().length === 0 || api.loading()"
+    >
+      Create Assessment
+    </button>
+
+    <button mat-stroked-button color="warn" (click)="onReset()">Reset</button>
+
+    @if (api.loading()) {
+      <mat-progress-spinner
+        class="spinner"
+        mode="indeterminate"
+        diameter="32"
+      ></mat-progress-spinner>
+    }
+  </div>
 
   @if (api.error()) {
-    <p class="error">{{ api.error() }}</p>
+    <p class="error">
+      {{ api.error() }}
+    </p>
   }
 
   @if (api.lastAssessment(); as assessment) {
-    <mat-card>
+    <mat-divider class="divider"></mat-divider>
+
+    <mat-card class="result-card">
       <mat-card-title>Damage Summary</mat-card-title>
       <mat-card-content>
-        <p>New damage count: {{ assessment.summary.newDamageCount }}</p>
-        <p>Total estimated cost: ${{ assessment.summary.totalEstimatedCost }}</p>
-        <p>Severity score: {{ assessment.summary.severityScore | number: '1.1-1' }}</p>
+        <p>
+          <strong>New damage count:</strong>
+          {{ assessment.summary.newDamageCount }}
+        </p>
+        <p>
+          <strong>Total estimated cost:</strong>
+          ${{ assessment.summary.totalEstimatedCost }}
+        </p>
+        <p>
+          <strong>Severity score:</strong>
+          {{ assessment.summary.severityScore | number: '1.1-1' }}
+        </p>
 
-        <h3>Damages</h3>
+        <h3>Detected Damages</h3>
         <ul>
-          @for (d of assessment.damages; track d.panel) {
+          @for (d of assessment.damages; track d.id) {
             <li>
-              {{ d.panel }} – {{ d.type }} (severity {{ d.severity }}) → ${{ d.estimatedCost }}
+              <strong>{{ d.panel }}</strong>
+              – {{ d.type }} (severity {{ d.severity }}) → ${{ d.estimatedCost }}
             </li>
           }
         </ul>

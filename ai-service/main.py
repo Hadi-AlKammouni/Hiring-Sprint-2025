@@ -83,19 +83,36 @@ async def detect_damage(
     conf = float(confs[i])
     cls_id = int(classes[i])
 
-    # 🔹 Compute area ratio of this detection
-    box_area = max(0.0, float(x2 - x1) * float(y2 - y1))
+    # Box & area
+    box_w = float(x2 - x1)
+    box_h = float(y2 - y1)
+    box_area = max(0.0, box_w * box_h)
     area_ratio = box_area / image_area if image_area > 0 else 0.0
 
-    # 🔹 Map YOLO class to a "damage type"
-    # With a real damage model, cls_id would map to scratch/dent/crack.
-    # With generic yolov8n.pt, we just treat any detection as "damage"
-    # and pick a default type. You can refine this later.
-    damage_type = "dent"  # default for demo
+    # Center of the box (for rough side/panel detection)
+    cx = float((x1 + x2) / 2.0)
 
-    # 🔹 Panel naming heuristic (simple for now)
-    # A real system could use camera metadata + segmentation.
-    panel_name = f"panel-{i + 1}"
+    # --- Heuristic 1: map area_ratio to damage "type" ---
+    # These thresholds are purely illustrative for the prototype.
+    # In a real damage model, YOLO classes would directly map to scratch/dent/crack.
+    if area_ratio < 0.03:
+      damage_type = "scratch"
+    elif area_ratio < 0.12:
+      damage_type = "dent"
+    else:
+      damage_type = "crack"
+
+    # --- Heuristic 2: map horizontal position to a panel name ---
+    # Divide image into 3 vertical regions: left / center / right
+    if cx < width / 3:
+      side = "left"
+    elif cx < 2 * width / 3:
+      side = "center"
+    else:
+      side = "right"
+
+    # Basic stage-aware label (just text, doesn't change logic)
+    panel_name = f"{side}-side-panel"
 
     detections.append(
       {
@@ -105,5 +122,6 @@ async def detect_damage(
         "area_ratio": area_ratio,
       }
     )
+
 
   return JSONResponse({"detections": detections})

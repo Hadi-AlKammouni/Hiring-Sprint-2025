@@ -85,7 +85,7 @@ export class AssessmentService {
    *  - If return area is significantly larger => WORSENED.
    *  - If damage type changed (e.g. scratch -> dent) => WORSENED.
    */
-  private isNewOrWorsenedDamage(
+  public isNewOrWorsenedDamage(
     returnDet: AiDetection,
     pickupDetections: AiDetection[],
   ): boolean {
@@ -123,7 +123,7 @@ export class AssessmentService {
    * Business logic: convert a RETURN-stage AI detection into a Damage with
    * severity (1–5) and estimated cost based on area and type.
    */
-  private mapDetectionToDamage(det: AiDetection, index: number): Damage {
+  public mapDetectionToDamage(det: AiDetection, index: number): Damage {
     // Base severity from areaRatio
     // areaRatio ~ proportion of image covered by damage (0..1)
     let severity = 1;

@@ -46,13 +46,13 @@ export class AssessmentController {
     description: 'Created assessment with damage summary',
     type: AssessmentDto,
   })
-  createMockAssessment(
+  async createMockAssessment(
     @UploadedFiles()
     files: {
       pickupImages?: Express.Multer.File[];
       returnImages?: Express.Multer.File[];
     },
-  ): AssessmentDto {
+  ) {
     const pickup = files?.pickupImages ?? [];
     const ret = files?.returnImages ?? [];
 

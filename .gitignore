@@ -1,0 +1,18 @@
+# Node
+node_modules/
+dist/
+
+# Angular
+frontend/.angular/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.ai-service/venv/
+ai-service/.venv/
+
+# VSCode / IDE
+.vscode/
+.idea/

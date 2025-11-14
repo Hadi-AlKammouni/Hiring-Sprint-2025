@@ -29,12 +29,11 @@ export class AssessmentService {
 
   constructor(private readonly aiService: AiService) {}
 
-  createMockAssessment(
+  async createMockAssessment(
     pickupImages: Express.Multer.File[] = [],
     returnImages: Express.Multer.File[] = [],
-  ): Assessment {
-    // 1) Call AI layer to "analyze" images at pickup & return
-    const aiDetections: AiDetection[] = this.aiService.analyzeImages(
+  ): Promise<Assessment> {
+    const aiDetections: AiDetection[] = await this.aiService.analyzeImages(
       pickupImages,
       returnImages,
     );
@@ -42,7 +41,6 @@ export class AssessmentService {
     const pickupDetections = aiDetections.filter((d) => d.stage === 'pickup');
     const returnDetections = aiDetections.filter((d) => d.stage === 'return');
 
-    // 2) Only keep return detections that are new or worsened
     const newOrWorsenedReturnDetections = returnDetections.filter((retDet) =>
       this.isNewOrWorsenedDamage(retDet, pickupDetections),
     );
@@ -51,7 +49,6 @@ export class AssessmentService {
       this.mapDetectionToDamage(det, idx),
     );
 
-    // 3) Aggregate summary
     const id = randomUUID();
     const totalEstimatedCost = damages.reduce(
       (sum, d) => sum + d.estimatedCost,

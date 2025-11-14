@@ -1,63 +1,118 @@
 import { Injectable } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
+import FormData from 'form-data';
 
-// Simple internal type representing a "detected" damage from AI
 export type AiDamageType = 'scratch' | 'dent' | 'crack';
 export type AiStage = 'pickup' | 'return';
 
 export interface AiDetection {
-  stage: AiStage; // pickup or return
-  imageIndex: number; // index within that stage
+  stage: AiStage;
+  imageIndex: number;
   panel: string;
   type: AiDamageType;
   confidence: number;
-  areaRatio: number; // 0..1 proportion of image
+  areaRatio: number;
+}
+
+interface PythonDetection {
+  panel: string;
+  type: AiDamageType;
+  confidence: number;
+  area_ratio: number;
 }
 
 @Injectable()
 export class AiService {
-  analyzeImages(
-    pickupImages: Express.Multer.File[],
-    returnImages: Express.Multer.File[],
-  ): AiDetection[] {
+  private readonly aiBaseUrl = 'http://127.0.0.1:8000';
+
+  constructor(private readonly http: HttpService) {}
+
+  /**
+   * Calls the external Python AI service for each pickup and return image
+   * and normalizes the result into AiDetection[].
+   */
+  async analyzeImages(
+    pickupImages: Express.Multer.File[] = [],
+    returnImages: Express.Multer.File[] = [],
+  ): Promise<AiDetection[]> {
     const detections: AiDetection[] = [];
 
-    // 1) "Baseline" detections at pickup
-    pickupImages.forEach((file, index) => {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      const sizeKb = file.size / 1024;
-      const areaRatio = Math.min(0.25, Math.max(0.03, sizeKb / 7000)); // smaller baseline area
-      const confidence = Math.min(0.9, 0.6 + Math.random() * 0.3);
+    // 1) Pickup images
+    for (let i = 0; i < pickupImages.length; i++) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const file = pickupImages[i];
+      if (!file) continue;
 
-      detections.push({
-        stage: 'pickup',
-        imageIndex: index,
-        panel: `panel-${index + 1}`,
-        type: 'scratch', // assume smaller damage at pickup
-        confidence,
-        areaRatio,
-      });
-    });
+      const pythonDets = await this.callPythonService('pickup', file);
 
-    // 2) "Observed" detections at return (bigger / new damages)
-    returnImages.forEach((file, index) => {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      const sizeKb = file.size / 1024;
-      const areaRatio = Math.min(0.45, Math.max(0.05, sizeKb / 5000)); // can be larger
-      const confidence = Math.min(0.95, 0.7 + Math.random() * 0.25);
+      detections.push(
+        ...pythonDets.map((d) => ({
+          stage: 'pickup' as const,
+          imageIndex: i,
+          panel: d.panel ?? `panel-${i + 1}`,
+          type: d.type,
+          confidence: d.confidence,
+          areaRatio: d.area_ratio,
+        })),
+      );
+    }
 
-      // For demo: alternate between scratch and dent
-      const type: AiDamageType = index % 2 === 0 ? 'dent' : 'scratch';
+    // 2) Return images
+    for (let i = 0; i < returnImages.length; i++) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const file = returnImages[i];
+      if (!file) continue;
 
-      detections.push({
-        stage: 'return',
-        imageIndex: index,
-        panel: `panel-${index + 1}`,
-        type,
-        confidence,
-        areaRatio,
-      });
-    });
+      const pythonDets = await this.callPythonService('return', file);
 
+      detections.push(
+        ...pythonDets.map((d) => ({
+          stage: 'return' as const,
+          imageIndex: i,
+          panel: d.panel ?? `panel-${i + 1}`,
+          type: d.type,
+          confidence: d.confidence,
+          areaRatio: d.area_ratio,
+        })),
+      );
+    }
+
+    console.log('detections: ', detections);
     return detections;
+  }
+
+  private async callPythonService(
+    stage: AiStage,
+    file: Express.Multer.File,
+  ): Promise<PythonDetection[]> {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    if (!file.buffer) {
+      return [];
+    }
+
+    const form = new FormData();
+    form.append('stage', stage);
+
+    // ✅ send in-memory buffer as file
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    form.append('image', file.buffer, {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+      filename: file.originalname,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+      contentType: file.mimetype,
+    });
+
+    const response = await firstValueFrom(
+      this.http.post<{ detections: PythonDetection[] }>(
+        `${this.aiBaseUrl}/detect-damage`,
+        form,
+        {
+          headers: form.getHeaders(),
+        },
+      ),
+    );
+
+    return response.data?.detections ?? [];
   }
 }

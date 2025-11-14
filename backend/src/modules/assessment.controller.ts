@@ -1,17 +1,38 @@
-import { Controller, Post, Get, Param } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Param,
+  UploadedFiles,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { AssessmentService } from './assessment.service';
 
 @Controller('api/assessments')
 export class AssessmentController {
   constructor(private readonly assessmentService: AssessmentService) {}
 
-  // POST /api/assessments
   @Post()
-  createMockAssessment() {
-    return this.assessmentService.createMockAssessment();
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'pickupImages', maxCount: 10 },
+      { name: 'returnImages', maxCount: 10 },
+    ]),
+  )
+  createMockAssessment(
+    @UploadedFiles()
+    files: {
+      pickupImages?: Express.Multer.File[];
+      returnImages?: Express.Multer.File[];
+    },
+  ) {
+    const pickup = files?.pickupImages ?? [];
+    const ret = files?.returnImages ?? [];
+
+    return this.assessmentService.createMockAssessment(pickup, ret);
   }
 
-  // GET /api/assessments/:id
   @Get(':id')
   getMockAssessment(@Param('id') id: string) {
     return this.assessmentService.getMockAssessment(id);

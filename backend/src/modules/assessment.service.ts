@@ -26,7 +26,14 @@ export class AssessmentService {
   // Demo in-memory store
   private assessments = new Map<string, Assessment>();
 
-  createMockAssessment(): Assessment {
+  createMockAssessment(
+    pickupImages: Express.Multer.File[] = [],
+    returnImages: Express.Multer.File[] = [],
+  ): Assessment {
+    // For debugging only
+    // console.log('pickupImages count:', pickupImages.length);
+    // console.log('returnImages count:', returnImages.length);
+
     const id = randomUUID();
     const damages: Damage[] = [
       {

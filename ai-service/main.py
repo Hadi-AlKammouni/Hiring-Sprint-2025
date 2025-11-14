@@ -1,15 +1,15 @@
+import os
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.responses import JSONResponse
 from ultralytics import YOLO
 from PIL import Image
 from io import BytesIO
 
-app = FastAPI(title="Vehicle Damage AI Service", version="0.2.0")
+app = FastAPI(title="Vehicle Damage AI Service", version="0.3.0")
 
-# 🔹 Load YOLO model once at startup
-# For now, we use a generic YOLOv8 model. In a real system, this would be a
-# car-damage–fine-tuned model, e.g. "models/car_damage.pt".
-MODEL_PATH = "yolov8n.pt"
+# 🔹 Load YOLO model once at startup, configurable via env
+#   export MODEL_PATH=models/car_damage.pt
+MODEL_PATH = os.getenv("MODEL_PATH", "yolov8n.pt")
 model = YOLO(MODEL_PATH)
 
 

@@ -6,25 +6,30 @@
   </button>
 
   @if (api.loading()) {
-  <mat-progress-spinner mode="indeterminate" diameter="32"> </mat-progress-spinner>
-  } @if (api.error()) {
+    <mat-progress-spinner mode="indeterminate" diameter="32"> </mat-progress-spinner>
+  }
 
-  <p class="error">{{ api.error() }}</p>
-  } @if (api.lastAssessment(); as assessment) {
-  <mat-card>
-    <mat-card-title>Damage Summary</mat-card-title>
-    <mat-card-content>
-      <p>New damage count: {{ assessment.summary.newDamageCount }}</p>
-      <p>Total estimated cost: ${{ assessment.summary.totalEstimatedCost }}</p>
-      <p>Severity score: {{ assessment.summary.severityScore | number : '1.1-1' }}</p>
+  @if (api.error()) {
+    <p class="error">{{ api.error() }}</p>
+  }
 
-      <h3>Damages</h3>
-      <ul>
-        @for (d of assessment.damages; track d.panel) {
-        <li>{{ d.panel }} – {{ d.type }} (severity {{ d.severity }}) → ${{ d.estimatedCost }}</li>
-        }
-      </ul>
-    </mat-card-content>
-  </mat-card>
+  @if (api.lastAssessment(); as assessment) {
+    <mat-card>
+      <mat-card-title>Damage Summary</mat-card-title>
+      <mat-card-content>
+        <p>New damage count: {{ assessment.summary.newDamageCount }}</p>
+        <p>Total estimated cost: ${{ assessment.summary.totalEstimatedCost }}</p>
+        <p>Severity score: {{ assessment.summary.severityScore | number: '1.1-1' }}</p>
+
+        <h3>Damages</h3>
+        <ul>
+          @for (d of assessment.damages; track d.panel) {
+            <li>
+              {{ d.panel }} – {{ d.type }} (severity {{ d.severity }}) → ${{ d.estimatedCost }}
+            </li>
+          }
+        </ul>
+      </mat-card-content>
+    </mat-card>
   }
 </div>

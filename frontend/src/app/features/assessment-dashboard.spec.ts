@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { AssessmentDashboard } from './assessment-dashboard';
+import { provideZonelessChangeDetection } from '@angular/core';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('AssessmentDashboard', () => {
   let component: AssessmentDashboard;
@@ -8,7 +10,8 @@ describe('AssessmentDashboard', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AssessmentDashboard],
+      imports: [AssessmentDashboard, HttpClientTestingModule],
+      providers: [provideZonelessChangeDetection()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(AssessmentDashboard);

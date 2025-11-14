@@ -5,79 +5,98 @@
   </p>
 
   <div class="cards">
-    <!-- Pickup images -->
-    <mat-card class="upload-card">
-      <mat-card-title>Pickup Images</mat-card-title>
-      <mat-card-content>
-        <p>Select one or more images taken at vehicle pickup.</p>
+    <section class="upload-section">
+      <!-- Pickup images -->
+      <mat-card class="upload-card">
+        <mat-card-title>Pickup Images</mat-card-title>
+        <mat-card-content>
+          <button mat-raised-button color="primary" (click)="pickupInput.click()">
+            Select Pickup Images
+          </button>
 
-        <input type="file" accept="image/*" multiple (change)="onPickupFilesSelected($event)" />
+          <input
+            #pickupInput
+            type="file"
+            accept="image/*"
+            multiple
+            hidden
+            (change)="onPickupSelected($event)"
+          />
 
-        @if (pickupFiles().length > 0) {
-          <h4>Selected files:</h4>
-          <ul>
-            @for (file of pickupFiles(); track file.name) {
-              <li>
-                <mat-icon inline>image</mat-icon>
-                {{ file.name }}
-              </li>
-            }
-          </ul>
-        }
-      </mat-card-content>
-    </mat-card>
+          @if (pickupPreviews().length > 0) {
+            <div class="preview-grid">
+              @for (url of pickupPreviews(); track url) {
+                <div class="preview-item">
+                  <img [src]="url" alt="Pickup preview" />
+                </div>
+              }
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
 
-    <!-- Return images -->
-    <mat-card class="upload-card">
-      <mat-card-title>Return Images</mat-card-title>
-      <mat-card-content>
-        <p>Select one or more images taken at vehicle return.</p>
+      <!-- Return images -->
+      <mat-card class="upload-card">
+        <mat-card-title>Return Images</mat-card-title>
+        <mat-card-content>
+          <button mat-raised-button color="primary" (click)="returnInput.click()">
+            Select Return Images
+          </button>
 
-        <input type="file" accept="image/*" multiple (change)="onReturnFilesSelected($event)" />
+          <input
+            #returnInput
+            type="file"
+            accept="image/*"
+            multiple
+            hidden
+            (change)="onReturnSelected($event)"
+          />
 
-        @if (returnFiles().length > 0) {
-          <h4>Selected files:</h4>
-          <ul>
-            @for (file of returnFiles(); track file.name) {
-              <li>
-                <mat-icon inline>image</mat-icon>
-                {{ file.name }}
-              </li>
-            }
-          </ul>
-        }
-      </mat-card-content>
-    </mat-card>
+          @if (returnPreviews().length > 0) {
+            <div class="preview-grid">
+              @for (url of returnPreviews(); track url) {
+                <div class="preview-item">
+                  <img [src]="url" alt="Return preview" />
+                </div>
+              }
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+    </section>
   </div>
 
   <div class="actions">
     <button
       mat-raised-button
       color="primary"
-      (click)="onCreateAssessment()"
-      [disabled]="pickupFiles().length === 0 || returnFiles().length === 0 || api.loading()"
+      (click)="createAssessment()"
+      [disabled]="
+        pickupPreviews().length === 0 ||
+        returnPreviews().length === 0 ||
+        assessmentApiService.loading()
+      "
     >
       Create Assessment
     </button>
 
-    <button mat-stroked-button color="warn" (click)="onReset()">Reset</button>
+    <button mat-button (click)="reset()">Reset</button>
 
-    @if (api.loading()) {
-      <mat-progress-spinner
-        class="spinner"
-        mode="indeterminate"
-        diameter="32"
-      ></mat-progress-spinner>
+    @if (assessmentApiService.loading()) {
+      <div class="loading-overlay">
+        <mat-spinner class="spinner" [diameter]="60"></mat-spinner>
+        <p>Please wait, analyzing images...</p>
+      </div>
     }
   </div>
 
-  @if (api.error()) {
+  @if (assessmentApiService.error()) {
     <p class="error">
-      {{ api.error() }}
+      {{ assessmentApiService.error() }}
     </p>
   }
 
-  @if (api.lastAssessment(); as assessment) {
+  @if (assessmentApiService.lastAssessment(); as assessment) {
     <mat-divider class="divider"></mat-divider>
 
     <mat-card class="result-card">

@@ -81,4 +81,10 @@ export class AssessmentApiService {
       },
     });
   }
+
+  resetAssessment(): void {
+    this.lastAssessment.set(null);
+    this.error.set(null);
+    this.loading.set(false);
+  }
 }

@@ -2,7 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { AssessmentApiService } from '../core/services/assessment-api.service';
@@ -13,7 +13,7 @@ import { AssessmentApiService } from '../core/services/assessment-api.service';
     CommonModule,
     MatButtonModule,
     MatCardModule,
-    MatProgressSpinnerModule,
+    MatProgressSpinner,
     MatIconModule,
     MatDividerModule,
   ],
@@ -21,46 +21,77 @@ import { AssessmentApiService } from '../core/services/assessment-api.service';
   styleUrls: ['./assessment-dashboard.scss'],
 })
 export class AssessmentDashboard {
-  api = inject(AssessmentApiService);
+  assessmentApiService = inject(AssessmentApiService);
 
-  // Signals to hold selected files
-  pickupFiles = signal<File[]>([]);
-  returnFiles = signal<File[]>([]);
+  // Signals to store previews
+  pickupPreviews = signal<string[]>([]);
+  returnPreviews = signal<string[]>([]);
 
-  onPickupFilesSelected(event: Event) {
+  // Optionally keep the File[] if not already in service
+  pickupFiles: File[] = [];
+  returnFiles: File[] = [];
+
+  onPickupSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
-    if (!input.files?.length) {
-      this.pickupFiles.set([]);
+    const files = input.files;
+
+    // 🔹 If user cancels (no files), do nothing
+    if (!files || files.length === 0) {
       return;
     }
-    this.pickupFiles.set(Array.from(input.files));
+
+    const newlySelected = Array.from(files);
+
+    // Append to existing
+    this.pickupFiles = [...this.pickupFiles, ...newlySelected];
+
+    // Regenerate previews for all currently selected files
+    const urls = this.pickupFiles.map((file) => URL.createObjectURL(file));
+    this.pickupPreviews.set(urls);
+
+    // Clear input value so user can re-open same dialog with same files
+    input.value = '';
   }
 
-  onReturnFilesSelected(event: Event) {
+  onReturnSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
-    if (!input.files?.length) {
-      this.returnFiles.set([]);
-      return;
-    }
-    this.returnFiles.set(Array.from(input.files));
-  }
+    const files = input.files;
 
-  onCreateAssessment() {
-    const pickup = this.pickupFiles();
-    const ret = this.returnFiles();
-
-    if (!pickup.length || !ret.length) {
-      this.api.error.set('Please select pickup and return images.');
+    if (!files || files.length === 0) {
       return;
     }
 
-    this.api.createAssessmentWithImages(pickup, ret);
+    const newlySelected = Array.from(files);
+
+    this.returnFiles = [...this.returnFiles, ...newlySelected];
+
+    const urls = this.returnFiles.map((file) => URL.createObjectURL(file));
+    this.returnPreviews.set(urls);
+
+    input.value = '';
   }
 
-  onReset() {
-    this.pickupFiles.set([]);
-    this.returnFiles.set([]);
-    this.api.lastAssessment.set(null);
-    this.api.error.set(null);
+  // Use this.pickupFiles / this.returnFiles
+  createAssessment(): void {
+    if (!this.pickupFiles.length || !this.returnFiles.length) {
+      // show some mat-snack-bar or error signal later
+      return;
+    }
+
+    this.assessmentApiService.createAssessmentWithImages(this.pickupFiles, this.returnFiles);
+  }
+
+  reset(): void {
+    this.pickupFiles = [];
+    this.returnFiles = [];
+
+    this.pickupPreviews.set([]);
+    this.returnPreviews.set([]);
+
+    // Clear URLs to prevent memory leaks
+    this.pickupPreviews().forEach((url) => URL.revokeObjectURL(url));
+    this.returnPreviews().forEach((url) => URL.revokeObjectURL(url));
+
+    this.assessmentApiService.resetAssessment?.();
   }
 }

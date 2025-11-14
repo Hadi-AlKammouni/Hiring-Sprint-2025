@@ -33,14 +33,21 @@ export class AssessmentService {
     pickupImages: Express.Multer.File[] = [],
     returnImages: Express.Multer.File[] = [],
   ): Assessment {
-    // 1) Call AI layer to "analyze" images
+    // 1) Call AI layer to "analyze" images at pickup & return
     const aiDetections: AiDetection[] = this.aiService.analyzeImages(
       pickupImages,
       returnImages,
     );
 
-    // 2) Map AI detections to business-facing Damage objects
-    const damages: Damage[] = aiDetections.map((det, idx) =>
+    const pickupDetections = aiDetections.filter((d) => d.stage === 'pickup');
+    const returnDetections = aiDetections.filter((d) => d.stage === 'return');
+
+    // 2) Only keep return detections that are new or worsened
+    const newOrWorsenedReturnDetections = returnDetections.filter((retDet) =>
+      this.isNewOrWorsenedDamage(retDet, pickupDetections),
+    );
+
+    const damages: Damage[] = newOrWorsenedReturnDetections.map((det, idx) =>
       this.mapDetectionToDamage(det, idx),
     );
 
@@ -69,12 +76,51 @@ export class AssessmentService {
     return assessment;
   }
 
+  /**
+   * Decide if a return detection represents NEW or WORSENED damage
+   * compared to what was seen at pickup.
+   *
+   * Logic (simple but business-friendly):
+   *  - If there's no pickup detection on the same panel => NEW damage.
+   *  - If return area is significantly larger => WORSENED.
+   *  - If damage type changed (e.g. scratch -> dent) => WORSENED.
+   */
+  private isNewOrWorsenedDamage(
+    returnDet: AiDetection,
+    pickupDetections: AiDetection[],
+  ): boolean {
+    const samePanelPickup = pickupDetections.filter(
+      (p) => p.panel === returnDet.panel,
+    );
+
+    // No previous damage on this panel -> new damage
+    if (samePanelPickup.length === 0) {
+      return true;
+    }
+
+    // Consider it worsened if:
+    // - area increased significantly (e.g. +20%)
+    // - or type changed (scratch -> dent/crack)
+    const areaIncreaseThreshold = 1.2;
+
+    const anyWorse = samePanelPickup.some((pickup) => {
+      const areaIncreased =
+        returnDet.areaRatio > pickup.areaRatio * areaIncreaseThreshold;
+
+      const typeChanged = pickup.type !== returnDet.type;
+
+      return areaIncreased || typeChanged;
+    });
+
+    return anyWorse;
+  }
+
   getMockAssessment(id: string): Assessment | null {
     return this.assessments.get(id) ?? null;
   }
 
   /**
-   * Business logic: convert an AI detection into a Damage with
+   * Business logic: convert a RETURN-stage AI detection into a Damage with
    * severity (1–5) and estimated cost based on area and type.
    */
   private mapDetectionToDamage(det: AiDetection, index: number): Damage {

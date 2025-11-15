@@ -2,16 +2,13 @@
 node_modules/
 dist/
 
-# Angular
-frontend/.angular/
-
 # Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-.ai-service/venv/
-ai-service/.venv/
+*venv/
+*.venv/
 
 # VSCode / IDE
 .vscode/

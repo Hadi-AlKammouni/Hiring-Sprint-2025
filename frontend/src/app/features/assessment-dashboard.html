@@ -1,16 +1,24 @@
 <div class="page">
-  <h1>AI-Powered Vehicle Condition Assessment</h1>
-  <p class="subtitle">
-    Upload pickup and return images of the vehicle. The system will analyze and summarize damages.
-  </p>
+  <!-- Premium Header -->
+  <div class="header-section">
+    <h1>🚗 AI Vehicle Assessment</h1>
+    <p class="subtitle">
+      Upload pickup and return images. Our AI will detect and analyze every damage with precision.
+    </p>
+  </div>
 
-  <div class="cards">
-    <section class="upload-section">
-      <!-- Pickup images -->
+  <div class="content-wrapper">
+    <!-- Upload Cards -->
+    <div class="upload-section">
+      <!-- Pickup Images Card -->
       <mat-card class="upload-card">
-        <mat-card-title>Pickup Images</mat-card-title>
+        <mat-card-title>
+          <mat-icon>camera_alt</mat-icon>
+          Pickup Images
+        </mat-card-title>
         <mat-card-content>
           <button mat-raised-button color="primary" (click)="pickupInput.click()">
+            <mat-icon>add_photo_alternate</mat-icon>
             Select Pickup Images
           </button>
 
@@ -34,18 +42,17 @@
                     type="button"
                     class="remove-image-btn"
                     (click)="removePickupImage(i); $event.stopPropagation()"
+                    aria-label="Remove image"
                   >
-                    &times;
+                    ×
                   </button>
 
-                  <img [src]="url" alt="Pickup preview" />
+                  <img [src]="url" [alt]="'Pickup preview ' + (i + 1)" />
 
                   @if (assessmentApiService.lastAssessment(); as assessment) {
-                    <ng-container>
-                      @for (d of getDamagesForImage(assessment, 'pickup', i); track d.id) {
-                        <div class="damage-box" [ngStyle]="boxStyle(d)"></div>
-                      }
-                    </ng-container>
+                    @for (d of getDamagesForImage(assessment, 'pickup', i); track d.id) {
+                      <div class="damage-box" [ngStyle]="boxStyle(d)"></div>
+                    }
                   }
                 </div>
               }
@@ -54,11 +61,15 @@
         </mat-card-content>
       </mat-card>
 
-      <!-- Return images -->
+      <!-- Return Images Card -->
       <mat-card class="upload-card">
-        <mat-card-title>Return Images</mat-card-title>
+        <mat-card-title>
+          <mat-icon>assignment_return</mat-icon>
+          Return Images
+        </mat-card-title>
         <mat-card-content>
           <button mat-raised-button color="primary" (click)="returnInput.click()">
+            <mat-icon>add_photo_alternate</mat-icon>
             Select Return Images
           </button>
 
@@ -82,18 +93,17 @@
                     type="button"
                     class="remove-image-btn"
                     (click)="removeReturnImage(i); $event.stopPropagation()"
+                    aria-label="Remove image"
                   >
-                    &times;
+                    ×
                   </button>
 
-                  <img [src]="url" alt="Return preview" />
+                  <img [src]="url" [alt]="'Return preview ' + (i + 1)" />
 
                   @if (assessmentApiService.lastAssessment(); as assessment) {
-                    <ng-container>
-                      @for (d of getDamagesForImage(assessment, 'return', i); track d.id) {
-                        <div class="damage-box" [ngStyle]="boxStyle(d)"></div>
-                      }
-                    </ng-container>
+                    @for (d of getDamagesForImage(assessment, 'return', i); track d.id) {
+                      <div class="damage-box" [ngStyle]="boxStyle(d)"></div>
+                    }
                   }
                 </div>
               }
@@ -101,117 +111,130 @@
           }
         </mat-card-content>
       </mat-card>
-    </section>
-  </div>
+    </div>
 
-  <div class="actions">
-    <button
-      mat-raised-button
-      color="primary"
-      (click)="createAssessment()"
-      [disabled]="
-        pickupPreviews().length === 0 ||
-        returnPreviews().length === 0 ||
-        assessmentApiService.loading()
-      "
-    >
-      Create Assessment
-    </button>
+    <!-- Action Buttons -->
+    <div class="actions">
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="createAssessment()"
+        [disabled]="
+          pickupPreviews().length === 0 ||
+          returnPreviews().length === 0 ||
+          assessmentApiService.loading()
+        "
+      >
+        <mat-icon>psychology</mat-icon>
+        Analyze with AI
+      </button>
 
-    <button mat-button (click)="reset()">Reset</button>
+      <button mat-button (click)="reset()">
+        <mat-icon>refresh</mat-icon>
+        Reset All
+      </button>
 
-    @if (assessmentApiService.loading()) {
-      <div class="loading-overlay">
-        <mat-spinner class="spinner" [diameter]="60"></mat-spinner>
-        <p>Please wait, analyzing images...</p>
+      @if (assessmentApiService.loading()) {
+        <div class="loading-overlay">
+          <mat-spinner class="spinner" [diameter]="80"></mat-spinner>
+          <p>🔍 AI is analyzing your images...</p>
+        </div>
+      }
+    </div>
+
+    <!-- Error Display -->
+    @if (assessmentApiService.error()) {
+      <div class="error">
+        <mat-icon>error_outline</mat-icon>
+        {{ assessmentApiService.error() }}
+      </div>
+    }
+
+    <!-- Results Section -->
+    @if (assessmentApiService.lastAssessment(); as assessment) {
+      <div class="result-section">
+        <div class="result-header-actions">
+          <div class="result-title">
+            <mat-icon>assessment</mat-icon>
+            Assessment Results
+          </div>
+
+          <button mat-stroked-button (click)="exportAssessmentAsPdf(assessment)">
+            <mat-icon>picture_as_pdf</mat-icon>
+            Export PDF
+          </button>
+        </div>
+
+        <mat-card class="result-card" id="resultCard">
+          <mat-card-header>
+            <div mat-card-avatar class="assessment-icon"></div>
+            <mat-card-title>Damage Assessment Report</mat-card-title>
+            <mat-card-subtitle>Report ID: {{ assessment.id }}</mat-card-subtitle>
+          </mat-card-header>
+
+          <mat-card-content>
+            <!-- Summary Header with Chips -->
+            <div class="summary-header">
+              <span class="date-chip">
+                <mat-icon>schedule</mat-icon>
+                {{ assessment.createdAt | date: 'medium' }}
+              </span>
+
+              <span
+                class="severity-chip"
+                [ngClass]="severityClass(assessment.summary.severityScore)"
+              >
+                <mat-icon>warning</mat-icon>
+                Severity: {{ assessment.summary.severityScore | number: '1.1-1' }}/5
+              </span>
+            </div>
+
+            <!-- Summary Statistics Grid -->
+            <div class="summary-grid">
+              <div class="summary-item">
+                <span class="label">New Damages</span>
+                <span class="value">{{ assessment.summary.newDamageCount }}</span>
+              </div>
+
+              <div class="summary-item">
+                <span class="label">Estimated Cost</span>
+                <span class="value"
+                  >${{ assessment.summary.totalEstimatedCost | number: '1.0-0' }}</span
+                >
+              </div>
+            </div>
+
+            <!-- Damages List -->
+            <h3 class="damages-title">Detected Damages</h3>
+
+            @if (assessment.damages.length) {
+              <div class="damages-list">
+                @for (d of getUniqueDamages(assessment.damages); track d.id) {
+                  <div
+                    class="damage-item"
+                    (mouseenter)="highlightDamage(d.stage, d.imageIndex)"
+                    (mouseleave)="clearHighlight()"
+                  >
+                    <div class="damage-main">
+                      <span class="damage-panel">{{ d.panel }}</span>
+                      <span class="damage-type-chip">{{ d.type }}</span>
+                    </div>
+
+                    <div class="damage-meta">
+                      <span class="severity-label">Severity {{ d.severity }}</span>
+                      <span class="cost">${{ d.estimatedCost | number: '1.0-0' }}</span>
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <p class="no-damages">
+                No new damages detected! Vehicle returned in excellent condition.
+              </p>
+            }
+          </mat-card-content>
+        </mat-card>
       </div>
     }
   </div>
-
-  @if (assessmentApiService.error()) {
-    <p class="error">
-      {{ assessmentApiService.error() }}
-    </p>
-  }
-
-  @if (assessmentApiService.lastAssessment(); as assessment) {
-    <mat-divider class="divider"></mat-divider>
-
-    <div class="result-header-actions">
-      <span class="result-title">Assessment Result</span>
-
-      <button mat-stroked-button color="primary" (click)="exportAssessmentAsPdf(assessment)">
-        <!-- <mat-icon>download</mat-icon> -->
-        Export PDF
-      </button>
-    </div>
-
-    <mat-card class="result-card" id="resultCard">
-      <mat-card-header>
-        <div mat-card-avatar class="assessment-icon"></div>
-        <mat-card-title>Damage Assessment Summary</mat-card-title>
-        <mat-card-subtitle> ID: {{ assessment.id }} </mat-card-subtitle>
-      </mat-card-header>
-
-      <mat-card-content>
-        <!-- Top chips: date + severity -->
-        <div class="summary-header">
-          <span class="date-chip">
-            <!-- <mat-icon>schedule</mat-icon> -->
-            {{ assessment.createdAt | date: 'medium' }}
-          </span>
-
-          <span class="severity-chip" [ngClass]="severityClass(assessment.summary.severityScore)">
-            <!-- <mat-icon>warning</mat-icon> -->
-            Severity: {{ assessment.summary.severityScore | number: '1.1-1' }}/5
-          </span>
-        </div>
-
-        <!-- Key numbers -->
-        <div class="summary-grid">
-          <div class="summary-item">
-            <span class="label">New damage count</span>
-            <span class="value">
-              {{ assessment.summary.newDamageCount }}
-            </span>
-          </div>
-
-          <div class="summary-item">
-            <span class="label">Total estimated cost</span>
-            <span class="value">
-              ${{ assessment.summary.totalEstimatedCost | number: '1.0-0' }}
-            </span>
-          </div>
-        </div>
-
-        <h3 class="damages-title">Detected Damages</h3>
-
-        @if (assessment.damages.length) {
-          <ng-container>
-            <div class="damages-list">
-              @for (d of getUniqueDamages(assessment.damages); track d.id) {
-                <div
-                  class="damage-item"
-                  (mouseenter)="highlightDamage(d.stage, d.imageIndex)"
-                  (mouseleave)="clearHighlight()"
-                >
-                  <div class="damage-main">
-                    <span class="damage-panel">{{ d.panel }}</span>
-                    <span class="damage-type-chip">{{ d.type }}</span>
-                  </div>
-
-                  <div class="damage-meta">
-                    <span class="severity-label"> Severity {{ d.severity }} </span>
-                    <span class="cost"> ${{ d.estimatedCost | number: '1.0-0' }} </span>
-                  </div>
-                </div>
-              }
-            </div>
-          </ng-container>
-        } @else {
-          <p class="no-damages">No new or worsened damages detected on return.</p>
-        }
-      </mat-card-content>
-    </mat-card>
-  }
 </div>

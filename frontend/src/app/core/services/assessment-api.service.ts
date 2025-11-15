@@ -36,7 +36,6 @@ export interface Assessment {
 export class AssessmentApiService {
   private http = inject(HttpClient);
 
-  // TODO: later move to environment file
   private readonly baseUrl = 'http://localhost:3000';
 
   loading = signal(false);

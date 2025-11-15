@@ -39,7 +39,7 @@ export class AssessmentDashboard {
     const input = event.target as HTMLInputElement;
     const files = input.files;
 
-    // 🔹 If user cancels (no files), do nothing
+    // If user cancels (no files), do nothing
     if (!files || files.length === 0) {
       return;
     }
@@ -244,7 +244,7 @@ export class AssessmentDashboard {
   }
 
   getDamagesForImage(assessment: Assessment, stage: 'pickup' | 'return', index: number): Damage[] {
-    // Use your existing dedupe if available
+    // Use existing dedupe if available
     const allDamages = this.getUniqueDamages
       ? this.getUniqueDamages(assessment.damages)
       : assessment.damages;

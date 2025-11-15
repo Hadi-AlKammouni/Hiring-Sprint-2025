@@ -38,7 +38,8 @@ interface PythonDetection {
 
 @Injectable()
 export class AiService {
-  private readonly aiBaseUrl = 'http://127.0.0.1:8000';
+  private readonly aiBaseUrl =
+    process.env.AI_BASE_URL || 'http://127.0.0.1:8000';
 
   constructor(private readonly http: HttpService) {}
 

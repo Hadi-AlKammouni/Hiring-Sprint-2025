@@ -9,6 +9,12 @@ export interface Damage {
   estimatedCost: number;
   stage: 'pickup' | 'return';
   imageIndex: number;
+  bbox?: {
+    x: number; // 0–1
+    y: number; // 0–1
+    width: number; // 0–1
+    height: number; // 0–1
+  };
 }
 
 export interface AssessmentSummary {

@@ -242,4 +242,27 @@ export class AssessmentDashboard {
       return true;
     });
   }
+
+  getDamagesForImage(assessment: Assessment, stage: 'pickup' | 'return', index: number): Damage[] {
+    // Use your existing dedupe if available
+    const allDamages = this.getUniqueDamages
+      ? this.getUniqueDamages(assessment.damages)
+      : assessment.damages;
+
+    return allDamages.filter((d) => d.stage === stage && d.imageIndex === index && !!d.bbox);
+  }
+
+  boxStyle(damage: Damage): { [key: string]: string } {
+    if (!damage.bbox) {
+      return {};
+    }
+
+    const b = damage.bbox;
+    return {
+      left: `${b.x * 100}%`,
+      top: `${b.y * 100}%`,
+      width: `${b.width * 100}%`,
+      height: `${b.height * 100}%`,
+    };
+  }
 }

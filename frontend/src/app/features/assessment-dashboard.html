@@ -39,6 +39,14 @@
                   </button>
 
                   <img [src]="url" alt="Pickup preview" />
+
+                  @if (assessmentApiService.lastAssessment(); as assessment) {
+                    <ng-container>
+                      @for (d of getDamagesForImage(assessment, 'pickup', i); track d.id) {
+                        <div class="damage-box" [ngStyle]="boxStyle(d)"></div>
+                      }
+                    </ng-container>
+                  }
                 </div>
               }
             </div>
@@ -79,6 +87,14 @@
                   </button>
 
                   <img [src]="url" alt="Return preview" />
+
+                  @if (assessmentApiService.lastAssessment(); as assessment) {
+                    <ng-container>
+                      @for (d of getDamagesForImage(assessment, 'return', i); track d.id) {
+                        <div class="damage-box" [ngStyle]="boxStyle(d)"></div>
+                      }
+                    </ng-container>
+                  }
                 </div>
               }
             </div>

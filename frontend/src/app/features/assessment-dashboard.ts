@@ -9,6 +9,7 @@ import { Assessment, AssessmentApiService } from '../core/services/assessment-ap
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 
+type DamageHighlight = { stage: 'pickup' | 'return'; imageIndex: number };
 @Component({
   selector: 'app-assessment-dashboard',
   imports: [
@@ -28,6 +29,7 @@ export class AssessmentDashboard {
   // Signals to store previews
   pickupPreviews = signal<string[]>([]);
   returnPreviews = signal<string[]>([]);
+  highlightedDamage = signal<DamageHighlight | null>(null);
 
   // Optionally keep the File[] if not already in service
   pickupFiles: File[] = [];
@@ -135,5 +137,18 @@ export class AssessmentDashboard {
       const fileName = `assessment-${assessment.id}.pdf`;
       pdf.save(fileName);
     });
+  }
+
+  highlightDamage(stage: 'pickup' | 'return', imageIndex: number): void {
+    this.highlightedDamage.set({ stage, imageIndex });
+  }
+
+  clearHighlight(): void {
+    this.highlightedDamage.set(null);
+  }
+
+  isPreviewHighlighted(stage: 'pickup' | 'return', index: number): boolean {
+    const h = this.highlightedDamage();
+    return !!h && h.stage === stage && h.imageIndex === index;
   }
 }

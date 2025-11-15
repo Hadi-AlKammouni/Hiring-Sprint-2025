@@ -7,6 +7,8 @@ export interface Damage {
   type: 'scratch' | 'dent' | 'crack';
   severity: number;
   estimatedCost: number;
+  stage: 'pickup' | 'return';
+  imageIndex: number;
 }
 
 export interface AssessmentSummary {

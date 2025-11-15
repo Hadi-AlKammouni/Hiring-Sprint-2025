@@ -25,8 +25,11 @@
 
           @if (pickupPreviews().length > 0) {
             <div class="preview-grid">
-              @for (url of pickupPreviews(); track url) {
-                <div class="preview-item">
+              @for (url of pickupPreviews(); track url; let i = $index) {
+                <div
+                  class="preview-item"
+                  [ngClass]="{ highlighted: isPreviewHighlighted('pickup', i) }"
+                >
                   <img [src]="url" alt="Pickup preview" />
                 </div>
               }
@@ -54,8 +57,11 @@
 
           @if (returnPreviews().length > 0) {
             <div class="preview-grid">
-              @for (url of returnPreviews(); track url) {
-                <div class="preview-item">
+              @for (url of returnPreviews(); track url; let i = $index) {
+                <div
+                  class="preview-item"
+                  [ngClass]="{ highlighted: isPreviewHighlighted('return', i) }"
+                >
                   <img [src]="url" alt="Return preview" />
                 </div>
               }
@@ -152,7 +158,11 @@
           <ng-container>
             <div class="damages-list">
               @for (d of assessment.damages; track d.id) {
-                <div class="damage-item">
+                <div
+                  class="damage-item"
+                  (mouseenter)="highlightDamage(d.stage, d.imageIndex)"
+                  (mouseleave)="clearHighlight()"
+                >
                   <div class="damage-main">
                     <span class="damage-panel">{{ d.panel }}</span>
                     <span class="damage-type-chip">{{ d.type }}</span>

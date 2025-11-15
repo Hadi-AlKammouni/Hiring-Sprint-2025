@@ -78,7 +78,6 @@ A fully functional, deployed, production-ready damage assessment system:
 ✔️ **Unit Tests** for all layers
 
 ---
----
 
 ## 🧩 Features
 
@@ -120,7 +119,7 @@ root
 Clone the repo:
 ```bash
 git clone 
-cd 
+cd <project directory>
 ```
 
 ### 🔧 AI Service (FastAPI)

@@ -18,6 +18,7 @@ interface AssessmentSummary {
 
 export interface Assessment {
   id: string;
+  createdAt: string; // ISO timestamp
   summary: AssessmentSummary;
   damages: Damage[];
 }
@@ -61,6 +62,7 @@ export class AssessmentService {
 
     const assessment: Assessment = {
       id,
+      createdAt: new Date().toISOString(),
       summary: {
         newDamageCount: damages.length,
         totalEstimatedCost,

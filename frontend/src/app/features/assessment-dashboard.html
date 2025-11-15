@@ -100,30 +100,68 @@
     <mat-divider class="divider"></mat-divider>
 
     <mat-card class="result-card">
-      <mat-card-title>Damage Summary</mat-card-title>
-      <mat-card-content>
-        <p>
-          <strong>New damage count:</strong>
-          {{ assessment.summary.newDamageCount }}
-        </p>
-        <p>
-          <strong>Total estimated cost:</strong>
-          ${{ assessment.summary.totalEstimatedCost }}
-        </p>
-        <p>
-          <strong>Severity score:</strong>
-          {{ assessment.summary.severityScore | number: '1.1-1' }}
-        </p>
+      <mat-card-header>
+        <div mat-card-avatar class="assessment-icon"></div>
+        <mat-card-title>Damage Assessment Summary</mat-card-title>
+        <mat-card-subtitle> ID: {{ assessment.id }} </mat-card-subtitle>
+      </mat-card-header>
 
-        <h3>Detected Damages</h3>
-        <ul>
-          @for (d of assessment.damages; track d.id) {
-            <li>
-              <strong>{{ d.panel }}</strong>
-              – {{ d.type }} (severity {{ d.severity }}) → ${{ d.estimatedCost }}
-            </li>
-          }
-        </ul>
+      <mat-card-content>
+        <!-- Top chips: date + severity -->
+        <div class="summary-header">
+          <span class="date-chip">
+            <!-- <mat-icon>schedule</mat-icon> -->
+            {{ assessment.createdAt | date: 'medium' }}
+          </span>
+
+          <span class="severity-chip" [ngClass]="severityClass(assessment.summary.severityScore)">
+            <!-- <mat-icon>warning</mat-icon> -->
+            Severity: {{ assessment.summary.severityScore | number: '1.1-1' }}/5
+          </span>
+        </div>
+
+        <!-- Key numbers -->
+        <div class="summary-grid">
+          <div class="summary-item">
+            <span class="label">New damage count</span>
+            <span class="value">
+              {{ assessment.summary.newDamageCount }}
+            </span>
+          </div>
+
+          <div class="summary-item">
+            <span class="label">Total estimated cost</span>
+            <span class="value">
+              ${{ assessment.summary.totalEstimatedCost | number: '1.0-0' }}
+            </span>
+          </div>
+        </div>
+
+        <h3 class="damages-title">Detected Damages</h3>
+
+        @if (assessment.damages.length) {
+          <ng-container>
+            <div class="damages-list">
+              @for (d of assessment.damages; track d.id) {
+                <div class="damage-item">
+                  <div class="damage-main">
+                    <span class="damage-panel">{{ d.panel }}</span>
+                    <span class="damage-type-chip">{{ d.type }}</span>
+                  </div>
+
+                  <div class="damage-meta">
+                    <span class="severity-label"> Severity {{ d.severity }} </span>
+                    <span class="cost"> ${{ d.estimatedCost | number: '1.0-0' }} </span>
+                  </div>
+                </div>
+              }
+            </div>
+          </ng-container>
+        } @else {
+          <ng-template #noDamages>
+            <p class="no-damages">No new or worsened damages detected on return.</p>
+          </ng-template>
+        }
       </mat-card-content>
     </mat-card>
   }

@@ -17,6 +17,7 @@ export interface AssessmentSummary {
 
 export interface Assessment {
   id: string;
+  createdAt: string;
   summary: AssessmentSummary;
   damages: Damage[];
 }

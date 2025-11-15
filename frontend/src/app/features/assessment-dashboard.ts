@@ -94,4 +94,10 @@ export class AssessmentDashboard {
 
     this.assessmentApiService.resetAssessment?.();
   }
+
+  severityClass(score: number): string {
+    if (score >= 4) return 'severity-high';
+    if (score >= 2) return 'severity-medium';
+    return 'severity-low';
+  }
 }

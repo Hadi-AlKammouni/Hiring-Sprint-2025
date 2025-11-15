@@ -9,6 +9,9 @@ export class AssessmentDto {
   })
   id: string;
 
+  @ApiProperty({ description: 'ISO timestamp when the assessment was created' })
+  createdAt: string;
+
   @ApiProperty({ type: AssessmentSummaryDto })
   summary: AssessmentSummaryDto;
 

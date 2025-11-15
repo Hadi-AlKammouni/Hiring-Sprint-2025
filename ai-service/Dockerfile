@@ -20,8 +20,5 @@ COPY . .
 # Expose FastAPI port
 EXPOSE 8000
 
-# Environment (optional, can still override MODEL_PATH at runtime)
-ENV MODEL_PATH=models/car_damage.pt
-
 # Run FastAPI app with uvicorn
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

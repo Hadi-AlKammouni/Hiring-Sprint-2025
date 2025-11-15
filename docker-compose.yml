@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+  ai-service:
+    build:
+      context: ./ai-service
+    container_name: ai-service
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./ai-service/models:/app/models
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./backend
+    container_name: backend
+    depends_on:
+      - ai-service
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      # Use the Docker service name for AI URL
+      - AI_BASE_URL=http://ai-service:8000
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: frontend
+    depends_on:
+      - backend
+    ports:
+      # Host:Container → app will be on http://localhost:4200
+      - "4200:80"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

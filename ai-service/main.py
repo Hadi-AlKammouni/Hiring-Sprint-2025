@@ -93,7 +93,10 @@ async def detect_damage(
             "panel": "panel-1",
             "type": "dent",
             "confidence": 0.9,
-            "area_ratio": 0.2
+            "area_ratio": 0.2,
+            "bbox": {
+              "x": 0.12, "y": 0.25, "width": 0.2, "height": 0.15
+            }
           },
           ...
         ]
@@ -148,7 +151,7 @@ async def detect_damage(
         # Center of the box (for rough side/panel detection)
         cx = float((x1 + x2) / 2.0)
 
-        # 🔹 NEW: use YOLO class name + area to decide damage_type
+        # Use YOLO class name + area to decide damage_type
         # Get raw class name from model
         if isinstance(NAMES, dict):
             raw_name = str(NAMES.get(cls_id, "damage"))
@@ -160,7 +163,16 @@ async def detect_damage(
 
         damage_type = map_raw_name_to_type(raw_name, area_ratio)
 
-        # --- Panel name heuristic (unchanged) ---
+        # Normalized bbox (0–1, relative to image size)
+        if width > 0 and height > 0:
+            norm_x = float(x1) / float(width)
+            norm_y = float(y1) / float(height)
+            norm_w = float(box_w) / float(width)
+            norm_h = float(box_h) / float(height)
+        else:
+            norm_x = norm_y = norm_w = norm_h = 0.0
+
+        # Panel name heuristic
         # Divide image into 3 vertical regions: left / center / right
         if cx < width / 3:
             side = "left"
@@ -177,6 +189,12 @@ async def detect_damage(
                 "type": damage_type,
                 "confidence": conf,
                 "area_ratio": area_ratio,
+                "bbox": {
+                    "x": norm_x,
+                    "y": norm_y,
+                    "width": norm_w,
+                    "height": norm_h,
+                },
             }
         )
 

@@ -170,7 +170,7 @@ export class AssessmentService {
       estimatedCost,
       stage: det.stage,
       imageIndex: det.imageIndex,
-      bbox: det.bbox, // NEW
+      bbox: det.bbox,
     };
   }
 }

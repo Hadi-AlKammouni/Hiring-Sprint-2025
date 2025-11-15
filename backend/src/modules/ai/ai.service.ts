@@ -54,7 +54,6 @@ export class AiService {
 
     // 1) Pickup images
     for (let i = 0; i < pickupImages.length; i++) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const file = pickupImages[i];
       if (!file) continue;
 
@@ -75,7 +74,6 @@ export class AiService {
 
     // 2) Return images
     for (let i = 0; i < returnImages.length; i++) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const file = returnImages[i];
       if (!file) continue;
 
@@ -94,7 +92,6 @@ export class AiService {
       );
     }
 
-    console.log('detections: ', detections);
     return detections;
   }
 
@@ -102,7 +99,6 @@ export class AiService {
     stage: AiStage,
     file: Express.Multer.File,
   ): Promise<PythonDetection[]> {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (!file.buffer) {
       return [];
     }
@@ -111,11 +107,8 @@ export class AiService {
     form.append('stage', stage);
 
     // ✅ send in-memory buffer as file
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     form.append('image', file.buffer, {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       filename: file.originalname,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       contentType: file.mimetype,
     });
 

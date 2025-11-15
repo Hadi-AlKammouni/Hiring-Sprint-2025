@@ -17,9 +17,7 @@ A complete end-to-end system that **automatically compares pre-rental and post-r
   - [📌 Table of Contents](#-table-of-contents)
   - [🎯 Problem Overview](#-problem-overview)
   - [🚀 Final Deliverable](#-final-deliverable)
-- [🏗️ System Architecture](#️-system-architecture)
   - [🧩 Features](#-features)
-  - [🧩 Features](#-features-1)
   - [📦 Folder Structure](#-folder-structure)
   - [⚙️ Installation (Local)](#️-installation-local)
     - [🔧 AI Service (FastAPI)](#-ai-service-fastapi)
@@ -80,39 +78,6 @@ A fully functional, deployed, production-ready damage assessment system:
 ✔️ **Unit Tests** for all layers
 
 ---
----
-
-# 🏗️ System Architecture
-
-┌───────────────────────┐      POST /assessments      ┌───────────────────────┐
-│       Angular UI      │ ───────────────────────────▶ │    NestJS Backend     │
-│  Upload images (2x)   │                              │  Business Logic        │
-│  Display overlays     │ ◀─────────────────────────── │  Cost & Severity Calc  │
-└───────────────────────┘       JSON Response          └───────────────────────┘
-                                     │
-                                     │ call AI_BASE_URL /detect-damage
-                                     ▼
-                         ┌────────────────────────┐
-                         │   FastAPI + YOLOv8     │
-                         │  CV Inference Service  │
-                         │  panel + type + boxes  │
-                         └────────────────────────┘
-
-
----
-
-## 🧩 Features
-
-✔ Multi-image Upload (Pickup + Return)  
-✔ YOLOv8 Damage Detection  
-✔ Bounding Box Overlays on Images  
-✔ Severity Score & Cost Estimation  
-✔ New/Worsened Damage Comparison  
-✔ Modern Responsive UI  
-✔ Animated Cards & Chips (Angular Material)  
-✔ REST API with Swagger  
-✔ 3-tier Deployment (Frontend + Backend + AI)
-
 ---
 
 ## 🧩 Features

@@ -30,4 +30,17 @@ export class DamageDto {
     description: 'Estimated repair cost in USD',
   })
   estimatedCost: number;
+
+  @ApiProperty({
+    example: 'pickup',
+    enum: ['pickup', 'return'],
+    description: 'At which stage',
+  })
+  stage: 'pickup' | 'return';
+
+  @ApiProperty({
+    example: 250,
+    description: 'Index of the image that produced this damage',
+  })
+  imageIndex: number;
 }

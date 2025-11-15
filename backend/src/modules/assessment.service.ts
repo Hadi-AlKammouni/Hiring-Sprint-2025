@@ -1,13 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import { AiService, AiDetection } from './ai/ai.service';
+import { AiService, AiDetection, AiStage } from './ai/ai.service';
 
 interface Damage {
   id: string;
   panel: string;
   type: 'scratch' | 'dent' | 'crack';
-  severity: number; // 1–5
-  estimatedCost: number; // USD
+  severity: number;
+  estimatedCost: number;
+  stage: AiStage; // 'pickup' | 'return'
+  imageIndex: number; // index of the image that produced this damage
 }
 
 interface AssessmentSummary {
@@ -155,11 +157,13 @@ export class AssessmentService {
     );
 
     return {
-      id: `d-${index + 1}`,
-      panel: det.panel ?? 'unknown-panel',
+      id: `d${index + 1}`,
+      panel: det.panel,
       type: det.type,
       severity,
       estimatedCost,
+      stage: det.stage,
+      imageIndex: det.imageIndex,
     };
   }
 }

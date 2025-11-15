@@ -254,7 +254,6 @@ This project demonstrates:
 - Advanced decision engine (damage pricing model)
 
 ### 🖼 UX / UI
-- PDF report export
 - Interactive damage annotation
 - Full before/after diff viewer
 - Multi-language support

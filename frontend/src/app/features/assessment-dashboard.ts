@@ -5,7 +5,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
-import { Assessment, AssessmentApiService } from '../core/services/assessment-api.service';
+import { Assessment, AssessmentApiService, Damage } from '../core/services/assessment-api.service';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 
@@ -46,15 +46,35 @@ export class AssessmentDashboard {
 
     const newlySelected = Array.from(files);
 
+    // Filter out duplicates by (name, size, lastModified)
+    const nonDuplicate = newlySelected.filter(
+      (newFile) =>
+        !this.pickupFiles.some(
+          (existing) =>
+            existing.name === newFile.name &&
+            existing.size === newFile.size &&
+            existing.lastModified === newFile.lastModified,
+        ),
+    );
+
+    if (nonDuplicate.length === 0) {
+      // Nothing new → no need to reset results
+      input.value = '';
+      return;
+    }
+
     // Append to existing
-    this.pickupFiles = [...this.pickupFiles, ...newlySelected];
+    this.pickupFiles = [...this.pickupFiles, ...nonDuplicate];
 
     // Regenerate previews for all currently selected files
-    const urls = this.pickupFiles.map((file) => URL.createObjectURL(file));
-    this.pickupPreviews.set(urls);
+    const newUrls = nonDuplicate.map((file) => URL.createObjectURL(file));
+    this.pickupPreviews.set([...this.pickupPreviews(), ...newUrls]);
 
-    // Clear input value so user can re-open same dialog with same files
+    // Let user re-select same files again if necessary
     input.value = '';
+
+    // Images changed → reset results
+    this.onImagesChanged();
   }
 
   onReturnSelected(event: Event): void {
@@ -67,12 +87,29 @@ export class AssessmentDashboard {
 
     const newlySelected = Array.from(files);
 
-    this.returnFiles = [...this.returnFiles, ...newlySelected];
+    const nonDuplicate = newlySelected.filter(
+      (newFile) =>
+        !this.returnFiles.some(
+          (existing) =>
+            existing.name === newFile.name &&
+            existing.size === newFile.size &&
+            existing.lastModified === newFile.lastModified,
+        ),
+    );
 
-    const urls = this.returnFiles.map((file) => URL.createObjectURL(file));
-    this.returnPreviews.set(urls);
+    if (nonDuplicate.length === 0) {
+      input.value = '';
+      return;
+    }
+
+    this.returnFiles = [...this.returnFiles, ...nonDuplicate];
+
+    const newUrls = nonDuplicate.map((file) => URL.createObjectURL(file));
+    this.returnPreviews.set([...this.returnPreviews(), ...newUrls]);
 
     input.value = '';
+
+    this.onImagesChanged();
   }
 
   // Use this.pickupFiles / this.returnFiles
@@ -150,5 +187,59 @@ export class AssessmentDashboard {
   isPreviewHighlighted(stage: 'pickup' | 'return', index: number): boolean {
     const h = this.highlightedDamage();
     return !!h && h.stage === stage && h.imageIndex === index;
+  }
+
+  removePickupImage(index: number): void {
+    const urls = this.pickupPreviews();
+    const files = this.pickupFiles;
+
+    if (urls[index]) {
+      URL.revokeObjectURL(urls[index]);
+    }
+
+    const newFiles = files.filter((_, i) => i !== index);
+    const newUrls = urls.filter((_, i) => i !== index);
+
+    this.pickupFiles = newFiles;
+    this.pickupPreviews.set(newUrls);
+
+    this.onImagesChanged();
+  }
+
+  removeReturnImage(index: number): void {
+    const urls = this.returnPreviews();
+    const files = this.returnFiles;
+
+    if (urls[index]) {
+      URL.revokeObjectURL(urls[index]);
+    }
+
+    const newFiles = files.filter((_, i) => i !== index);
+    const newUrls = urls.filter((_, i) => i !== index);
+
+    this.returnFiles = newFiles;
+    this.returnPreviews.set(newUrls);
+
+    this.onImagesChanged();
+  }
+
+  private onImagesChanged(): void {
+    // clear highlight
+    this.highlightedDamage.set(null);
+    // clear last assessment / errors / loading
+    this.assessmentApiService.resetAssessment();
+  }
+
+  getUniqueDamages(damages: Damage[]): Damage[] {
+    const seen = new Set<string>();
+
+    return damages.filter((d) => {
+      const key = `${d.stage}-${d.imageIndex}-${d.panel}-${d.type}-${d.severity}-${d.estimatedCost}`;
+      if (seen.has(key)) {
+        return false;
+      }
+      seen.add(key);
+      return true;
+    });
   }
 }

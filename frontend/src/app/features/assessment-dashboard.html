@@ -30,6 +30,14 @@
                   class="preview-item"
                   [ngClass]="{ highlighted: isPreviewHighlighted('pickup', i) }"
                 >
+                  <button
+                    type="button"
+                    class="remove-image-btn"
+                    (click)="removePickupImage(i); $event.stopPropagation()"
+                  >
+                    &times;
+                  </button>
+
                   <img [src]="url" alt="Pickup preview" />
                 </div>
               }
@@ -62,6 +70,14 @@
                   class="preview-item"
                   [ngClass]="{ highlighted: isPreviewHighlighted('return', i) }"
                 >
+                  <button
+                    type="button"
+                    class="remove-image-btn"
+                    (click)="removeReturnImage(i); $event.stopPropagation()"
+                  >
+                    &times;
+                  </button>
+
                   <img [src]="url" alt="Return preview" />
                 </div>
               }
@@ -157,7 +173,7 @@
         @if (assessment.damages.length) {
           <ng-container>
             <div class="damages-list">
-              @for (d of assessment.damages; track d.id) {
+              @for (d of getUniqueDamages(assessment.damages); track d.id) {
                 <div
                   class="damage-item"
                   (mouseenter)="highlightDamage(d.stage, d.imageIndex)"

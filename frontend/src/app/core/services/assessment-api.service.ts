@@ -36,7 +36,8 @@ export interface Assessment {
 export class AssessmentApiService {
   private http = inject(HttpClient);
 
-  private readonly baseUrl = 'http://localhost:3000';
+  // private readonly baseUrl = 'http://localhost:3000';
+  private readonly baseUrl = 'https://vehicle-backend-fr92.onrender.com';
 
   loading = signal(false);
   lastAssessment = signal<Assessment | null>(null);

@@ -51,7 +51,7 @@ describe('AssessmentService', () => {
 
     const damage = service.exposeMapDetectionToDamage(detection, 0);
 
-    expect(damage.id).toBe('d-1');
+    expect(damage.id).toBe('d1');
     expect(damage.panel).toBe('front-door');
     expect(damage.type).toBe('dent');
 

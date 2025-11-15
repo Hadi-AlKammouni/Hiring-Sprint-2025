@@ -252,7 +252,9 @@ export class AssessmentDashboard {
     return allDamages.filter((d) => d.stage === stage && d.imageIndex === index && !!d.bbox);
   }
 
-  boxStyle(damage: Damage): { [key: string]: string } {
+  boxStyle(
+    damage: Damage,
+  ): { left: string; top: string; width: string; height: string } | { [key: string]: string } {
     if (!damage.bbox) {
       return {};
     }

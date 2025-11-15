@@ -27,6 +27,7 @@ describe('AssessmentApiService', () => {
 
     const mockResponse: Assessment = {
       id: 'test-id',
+      createdAt: new Date().toISOString(),
       summary: {
         newDamageCount: 1,
         totalEstimatedCost: 250,
@@ -39,6 +40,8 @@ describe('AssessmentApiService', () => {
           type: 'dent',
           severity: 4,
           estimatedCost: 250,
+          stage: 'pickup',
+          imageIndex: 0,
         },
       ],
     };

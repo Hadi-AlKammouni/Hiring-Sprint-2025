@@ -10,6 +10,12 @@ interface Damage {
   estimatedCost: number;
   stage: AiStage; // 'pickup' | 'return'
   imageIndex: number; // index of the image that produced this damage
+  bbox?: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
 }
 
 interface AssessmentSummary {
@@ -164,6 +170,7 @@ export class AssessmentService {
       estimatedCost,
       stage: det.stage,
       imageIndex: det.imageIndex,
+      bbox: det.bbox, // NEW
     };
   }
 }

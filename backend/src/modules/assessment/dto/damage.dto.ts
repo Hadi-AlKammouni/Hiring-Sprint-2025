@@ -43,4 +43,22 @@ export class DamageDto {
     description: 'Index of the image that produced this damage',
   })
   imageIndex: number;
+
+  @ApiProperty({
+    example: {
+      bbox: {
+        x: 0.12,
+        y: 0.3,
+        width: 0.18,
+        height: 0.1,
+      },
+    },
+    description: 'Bounding boxes from AI service to assessment damages',
+  })
+  bbox?: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
 }

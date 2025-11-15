@@ -6,6 +6,13 @@ import FormData from 'form-data';
 export type AiDamageType = 'scratch' | 'dent' | 'crack';
 export type AiStage = 'pickup' | 'return';
 
+export interface AiBoundingBox {
+  x: number; // 0–1
+  y: number; // 0–1
+  width: number; // 0–1
+  height: number; // 0–1
+}
+
 export interface AiDetection {
   stage: AiStage;
   imageIndex: number;
@@ -13,6 +20,7 @@ export interface AiDetection {
   type: AiDamageType;
   confidence: number;
   areaRatio: number;
+  bbox?: AiBoundingBox; // optional to be safe
 }
 
 interface PythonDetection {
@@ -20,6 +28,12 @@ interface PythonDetection {
   type: AiDamageType;
   confidence: number;
   area_ratio: number;
+  bbox?: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
 }
 
 @Injectable()
@@ -54,6 +68,7 @@ export class AiService {
           type: d.type,
           confidence: d.confidence,
           areaRatio: d.area_ratio,
+          bbox: d.bbox,
         })),
       );
     }
@@ -74,6 +89,7 @@ export class AiService {
           type: d.type,
           confidence: d.confidence,
           areaRatio: d.area_ratio,
+          bbox: d.bbox,
         })),
       );
     }

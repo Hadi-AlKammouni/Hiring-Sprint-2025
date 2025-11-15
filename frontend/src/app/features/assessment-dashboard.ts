@@ -5,7 +5,9 @@ import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
-import { AssessmentApiService } from '../core/services/assessment-api.service';
+import { Assessment, AssessmentApiService } from '../core/services/assessment-api.service';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 
 @Component({
   selector: 'app-assessment-dashboard',
@@ -99,5 +101,39 @@ export class AssessmentDashboard {
     if (score >= 4) return 'severity-high';
     if (score >= 2) return 'severity-medium';
     return 'severity-low';
+  }
+
+  exportAssessmentAsPdf(assessment: Assessment): void {
+    const element = document.getElementById('resultCard') as HTMLElement;
+
+    if (!element) {
+      return;
+    }
+
+    html2canvas(element, { scale: 2 }).then((canvas) => {
+      const imgData = canvas.toDataURL('image/png');
+
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+
+      const margin = 10;
+      const imgWidth = pageWidth - margin * 2;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      if (imgHeight > pageHeight - margin * 2) {
+        const ratio = (pageHeight - margin * 2) / imgHeight;
+        const finalWidth = imgWidth * ratio;
+        const finalHeight = imgHeight * ratio;
+        const offsetX = (pageWidth - finalWidth) / 2;
+
+        pdf.addImage(imgData, 'PNG', offsetX, margin, finalWidth, finalHeight);
+      } else {
+        pdf.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight);
+      }
+
+      const fileName = `assessment-${assessment.id}.pdf`;
+      pdf.save(fileName);
+    });
   }
 }

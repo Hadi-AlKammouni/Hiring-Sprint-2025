@@ -99,7 +99,16 @@
   @if (assessmentApiService.lastAssessment(); as assessment) {
     <mat-divider class="divider"></mat-divider>
 
-    <mat-card class="result-card">
+    <div class="result-header-actions">
+      <span class="result-title">Assessment Result</span>
+
+      <button mat-stroked-button color="primary" (click)="exportAssessmentAsPdf(assessment)">
+        <!-- <mat-icon>download</mat-icon> -->
+        Export PDF
+      </button>
+    </div>
+
+    <mat-card class="result-card" id="resultCard">
       <mat-card-header>
         <div mat-card-avatar class="assessment-icon"></div>
         <mat-card-title>Damage Assessment Summary</mat-card-title>
@@ -158,9 +167,7 @@
             </div>
           </ng-container>
         } @else {
-          <ng-template #noDamages>
-            <p class="no-damages">No new or worsened damages detected on return.</p>
-          </ng-template>
+          <p class="no-damages">No new or worsened damages detected on return.</p>
         }
       </mat-card-content>
     </mat-card>

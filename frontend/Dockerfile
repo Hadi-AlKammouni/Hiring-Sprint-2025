@@ -21,7 +21,7 @@ RUN npm run build -- --configuration production
 # ============================
 FROM nginx:alpine
 
-COPY --from=builder /app/dist /usr/share/nginx/html
+COPY --from=builder /app/dist/frontend/browser /usr/share/nginx/html
 
 EXPOSE 80
 
